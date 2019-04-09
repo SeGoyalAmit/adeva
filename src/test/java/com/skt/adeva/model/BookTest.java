@@ -3,6 +3,8 @@ package com.skt.adeva.model;
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 
+import java.sql.Date;
+
 public class BookTest {
     @Test
     public void testEqualAndHashcodeForSameTitle() {
@@ -19,7 +21,7 @@ public class BookTest {
         book.setCountry("United States");
         book.setNumberOfPages(350);
         book.setPublisher("Acme Books");
-        book.setReleaseDate("2019-08-01");
+        book.setReleased(Date.valueOf("2019-08-01"));
         book.setAuthors(new String[]{"John Doe"});
         return book;
     }

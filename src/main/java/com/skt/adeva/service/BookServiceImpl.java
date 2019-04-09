@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 public class BookServiceImpl implements BookService {
     @Autowired
-    BookRepository bookRepository;
+    private BookRepository bookRepository;
 
     @Override
     public List<Book> getAll() {
@@ -33,12 +33,46 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(Long bookId, Book book) {
-        //TODO need to do some more tweaks
-        return bookRepository.save(book);
+        Book updatedBook;
+        Book dbBook = findById(bookId);
+        if (dbBook != null) {
+            if (book != null) {
+                if (book.getAuthors() != null) {
+                    dbBook.setAuthors(book.getAuthors());
+                }
+                if (book.getCountry() != null) {
+                    dbBook.setCountry(book.getCountry());
+                }
+                if (book.getIsbn() != null) {
+                    dbBook.setIsbn(book.getIsbn());
+                }
+                if (book.getName() != null) {
+                    dbBook.setOldBookName(dbBook.getName());
+                    dbBook.setName(book.getName());
+                }
+                if (book.getNumberOfPages() > 0) {
+                    dbBook.setNumberOfPages(book.getNumberOfPages());
+                }
+                if (book.getPublisher() != null) {
+                    dbBook.setPublisher(book.getPublisher());
+                }
+                if (book.getReleased() != null) {
+                    dbBook.setReleased(book.getReleased());
+                }
+            }
+            updatedBook = bookRepository.save(dbBook);
+        } else {
+            updatedBook = bookRepository.save(book);
+        }
+        return updatedBook;
     }
 
     @Override
-    public void delete(Long bookId) {
-        bookRepository.delete(bookRepository.findById(bookId).get());
+    public Book delete(Long bookId) {
+        Book dbBook = findById(bookId);
+        if (dbBook != null) {
+            bookRepository.delete(dbBook);
+        }
+        return dbBook;
     }
 }

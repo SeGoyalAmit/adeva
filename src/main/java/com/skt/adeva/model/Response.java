@@ -3,15 +3,12 @@ package com.skt.adeva.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {
     @JsonProperty(value="status_code")
     private int statusCode;
     private String status;
-    private List<Object> data = new ArrayList<>();
+    private Object data;
     private String message;
 
     public int getStatusCode() {
@@ -30,11 +27,11 @@ public class Response {
         this.status = status;
     }
 
-    public List<Object> getData() {
+    public Object getData() {
         return data;
     }
 
-    public void setData(List<Object> data) {
+    public void setData(Object data) {
         this.data = data;
     }
 

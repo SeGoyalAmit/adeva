@@ -13,7 +13,7 @@
             <column name="authors" type="JSON"/>
             <column name="number_of_pages" type="INT(4)"/>
             <column name="publisher" type="VARCHAR(255)"/>
-            <column name="release_date" type="VARCHAR(255)"/>
+            <column name="release_date" type="DATE"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

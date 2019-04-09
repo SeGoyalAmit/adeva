@@ -1,6 +1,8 @@
 package com.skt.adeva.controller;
 
 import com.skt.adeva.model.Book;
+import com.skt.adeva.model.CreateResponse;
+import com.skt.adeva.model.Response;
 import com.skt.adeva.repository.BookRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,10 +21,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.sql.Date;
+import java.util.List;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class BookControllerTest {
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Mock
     private BookController bookController;
@@ -31,7 +36,7 @@ public class BookControllerTest {
     private TestRestTemplate template;
 
     @Autowired
-    BookRepository bookRepository;
+    private BookRepository bookRepository;
 
     @Before
     public void setup() throws Exception {
@@ -51,17 +56,27 @@ public class BookControllerTest {
                 "\t\"country\": \"United States\",\n" +
                 "\t\"release_date\": \"2019-08-01\"\n" +
                 "}");
-        ResponseEntity<Book> response = null;
+        Book dbbook = null;
         try {
-            response = template.postForEntity("/api/v1/books", book, Book.class);
+            ResponseEntity<Response> response = template.postForEntity("/api/v1/books", book, Response.class);
 
-            Assert.assertEquals(201, response.getStatusCode().value());
+            Assert.assertEquals(201, response.getStatusCodeValue());
             Assert.assertNotNull(response.getBody());
-            Assert.assertEquals("Test Book", response.getBody().getName());
+            Response responseBody = response.getBody();
+            List<CreateResponse> data = (List<CreateResponse>) responseBody.getData();
+            dbbook = data.get(0).getBook();
+            Assert.assertEquals("Test Book", dbbook.getName());
+            Assert.assertEquals("123-3213243567", dbbook.getIsbn());
+            Assert.assertEquals(350, dbbook.getNumberOfPages());
+            Assert.assertEquals("Test Books", dbbook.getPublisher());
+            Assert.assertEquals("United States", dbbook.getCountry());
+            Assert.assertEquals(Date.valueOf("2019-08-01"), dbbook.getReleased());
+            Assert.assertArrayEquals(new String[]{"Test Author"}, dbbook.getAuthors());
+
         } finally {
             //cleanup the user
-            if (response != null && response.getBody() != null) {
-                bookRepository.deleteById(response.getBody().getId());
+            if (dbbook != null) {
+                bookRepository.deleteById(dbbook.getId());
             }
         }
     }
@@ -79,11 +94,14 @@ public class BookControllerTest {
                 "\t\"country\": \"United States\",\n" +
                 "\t\"release_date\": \"2019-08-01\"\n" +
                 "}");
-        ResponseEntity<Book> response = null;
-        ResponseEntity<Book> response1 = null;
+        Book dbbook = null;
+        Book dbbook1 = null;
         try {
-            response = template.postForEntity("/api/v1/books", book, Book.class);
-            Assert.assertEquals(201, response.getStatusCode().value());
+            ResponseEntity<Response> response = template.postForEntity("/api/v1/books", book, Response.class);
+            Assert.assertEquals(201, response.getStatusCodeValue());
+            Response responseBody = response.getBody();
+            List<CreateResponse> data = (List<CreateResponse>) responseBody.getData();
+            dbbook = data.get(0).getBook();
 
             book = getHttpEntity("{\n" +
                     "\t\"name\": \"Test Book 1\",\n" +
@@ -96,21 +114,25 @@ public class BookControllerTest {
                     "\t\"country\": \"United States\",\n" +
                     "\t\"release_date\": \"2019-08-01\"\n" +
                     "}");
-            response1 = template.postForEntity("/api/v1/books", book, Book.class);
-            Assert.assertEquals(201, response1.getStatusCode().value());
+            ResponseEntity<Response> response1 = template.postForEntity("/api/v1/books", book, Response.class);
+            Assert.assertEquals(201, response1.getStatusCodeValue());
+            responseBody = response1.getBody();
+            data = (List<CreateResponse>) responseBody.getData();
+            dbbook1 = data.get(0).getBook();
 
-            ResponseEntity<Book[]> getResponse = template.getForEntity("/api/v1/books", Book[].class);
-
+            ResponseEntity<Response> getResponse = template.getForEntity("/api/v1/books", Response.class);
+            Assert.assertEquals(200, getResponse.getStatusCodeValue());
             Assert.assertNotNull(getResponse.getBody());
-            Assert.assertEquals(200, getResponse.getStatusCode().value());
-            Assert.assertEquals(2, getResponse.getBody().length);
+
+            List<Book> dbBooks = (List<Book>) getResponse.getBody().getData();
+            Assert.assertEquals(2, dbBooks.size());
         } finally {
             //cleanup the user
-            if (response != null && response.getBody() != null) {
-                bookRepository.deleteById(response.getBody().getId());
+            if (dbbook != null) {
+                bookRepository.deleteById(dbbook.getId());
             }
-            if (response1 != null && response1.getBody() != null) {
-                bookRepository.deleteById(response1.getBody().getId());
+            if (dbbook1 != null) {
+                bookRepository.deleteById(dbbook1.getId());
             }
         }
     }
